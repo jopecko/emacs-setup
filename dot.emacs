@@ -1,20 +1,32 @@
-;;; Jim Weirich's GNU-Emacs Initialization File
+;;; GNU-Emacs Initialization File
+;;; based off of Jim Weirich's initialization file
 
-(setq elisp-directory "~jim/.elisp")
+;; Some file locations are relative to the HOME or the BIN directory
+(defvar home-dir)
+(setq home-dir (concat (expand-file-name "~") "/"))
+(defvar bin-dir (concat home-dir "bin/"))
+
+(setq elisp-directory (concat home-dir ".elisp"))
 (load (concat elisp-directory "/load-ini.el"))
 
-(custom-set-variables
- '(init-face-from-resources nil)
- '(mm-inline-media-tests (quote (("image/jpeg" mm-inline-image (lambda (handle) (mm-valid-and-fit-image-p (quote jpeg) handle))) ("image/png" mm-inline-image (lambda (handle) (mm-valid-and-fit-image-p (quote png) handle))) ("image/gif" mm-inline-image (lambda (handle) (mm-valid-and-fit-image-p (quote gif) handle))) ("image/tiff" mm-inline-image (lambda (handle) (mm-valid-and-fit-image-p (quote tiff) handle))) ("image/xbm" mm-inline-image (lambda (handle) (mm-valid-and-fit-image-p (quote xbm) handle))) ("image/x-xbitmap" mm-inline-image (lambda (handle) (mm-valid-and-fit-image-p (quote xbm) handle))) ("image/xpm" mm-inline-image (lambda (handle) (mm-valid-and-fit-image-p (quote xpm) handle))) ("image/x-pixmap" mm-inline-image (lambda (handle) (mm-valid-and-fit-image-p (quote xpm) handle))) ("image/bmp" mm-inline-image (lambda (handle) (mm-valid-and-fit-image-p (quote bmp) handle))) ("text/plain" mm-inline-text identity) ("text/enriched" mm-inline-text identity) ("text/richtext" mm-inline-text identity) ("text/x-patch" mm-display-patch-inline (lambda (handle) (locate-library "diff-mode"))) ("application/emacs-lisp" mm-display-elisp-inline identity) ("text/x-vcard" mm-inline-text (lambda (handle) (or (featurep (quote vcard)) (locate-library "vcard")))) ("message/delivery-status" mm-inline-text identity) ("message/rfc822" mm-inline-message identity) ("message/partial" mm-inline-partial identity) ("text/.*" mm-inline-text identity) ("audio/wav" mm-inline-audio (lambda (handle) (and (or (featurep (quote nas-sound)) (featurep (quote native-sound))) (device-sound-enabled-p)))) ("audio/au" mm-inline-audio (lambda (handle) (and (or (featurep (quote nas-sound)) (featurep (quote native-sound))) (device-sound-enabled-p)))) ("application/pgp-signature" ignore identity) ("multipart/alternative" ignore identity) ("multipart/mixed" ignore identity) ("multipart/related" ignore identity))))
- '(load-home-init-file t t)
- '(gnuserv-program (concat exec-directory "/gnuserv"))
- '(toolbar-news-reader (quote gnus))
- '(toolbar-mail-reader (quote gnus))
- '(ecb-source-path (quote (("/home/jim/working/rubyforge/rubygems" "RubyGems") ("/home/jim/working/rubyforge/rake" "Rake")))))
+;; Keep custom variables, (M-x customize*), in their own file
+;; http://www.gnu.org/software/emacs/manual/html_node/emacs/Saving-Customizations.html
+(cond ((< emacs-major-version 21)
+       ;; Emacs 20 customization
+       (setq custom-file (concat elisp-directory "emacs-custom-20.el")))
+      ((and (= emacs-major-version 21) (< emacs-minor-version 4))
+       ;; Emacs 21 customization, before version 21.4
+       (setq custom-file (concat elisp-directory "emacs-custom-21.el")))
+      ((< emacs-major-version 22)
+       ;; Emacs 21 customization, before version 21.4
+       (setq custom-file (concat elisp-directory "emacs-custom-21.4.el")))
+      (t
+       ;; Emacs version 22.1 or later
+       (setq custom-file (concat elisp-directory "emacs-custom-22.el"))))
 
-(setq minibuffer-max-depth nil)
-(custom-set-faces
- '(default ((t (:size "14pt" :family "Fixed"))) t))
+;; load the stored settings
+(when (file-readable-p custom-file)
+  (load custom-file 'noerror))
 
 
 ;;; This was installed by package-install.el.
@@ -26,3 +38,4 @@
   (when (file-readable-p fn)
     (load fn)
     (package-initialize)))
+
