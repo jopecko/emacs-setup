@@ -3,7 +3,7 @@
 
 require 'rake/clean'
 
-EMACS_CMD='/Applications/Aquamacs\ Emacs.app/Contents/MacOS/Aquamacs\ Emacs'
+EMACS_CMD='/usr/bin/emacs'
 
 EL_FILES = FileList['ini/*.el', 'local-pkgs/**/*.el']
 ELC_FILES = EL_FILES.ext('.elc')
