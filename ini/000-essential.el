@@ -69,9 +69,6 @@
 (defun at-home () (eq jw-site 'home))
 (defun at-who-knows-where () (eq jw-site 'unknown))
 
-;(if (and (or (is-emacs-19) (is-emacs-20)) (not (is-xemacs)))
-;    (transient-mark-mode t))
-
 ;;; Define autolist ==================================================
 
 (defun make-auto (pattern mode)
@@ -130,7 +127,7 @@
 ;(menu-bar-mode -1)                        ; don't show the menu
 (tool-bar-mode -1)                        ; don't show the toolbar
 (transient-mark-mode t)                   ; make the current 'selection' visible
-(delete-selection-mode t)                 ; delete the selection are with a keypress
+(delete-selection-mode t)                 ; delete the selection with a keypress
 (setq search-highlight t                  ; highlight when searching...
       query-replace-highlight t)          ; ...and replacing
 (fset 'yes-or-no-p 'y-or-n-p)             ; enable one letter y/n answers to yes/no
@@ -144,17 +141,14 @@
 (setq interprogram-paste-function         ; ...with...
       'x-cut-buffer-or-selection-value)   ; ...other X clients
 
-;; highlight the current line; set a custom face, so we can
-;; recognize from the normal marking (selection)
-;;(defface hl-line '((t (:background "Gray")))
-;;  "Face to use for 'hl-line-face'." :group 'hl-line)
-;;(setq hl-line-face 'hl-line)
-;;(global-hl-line-mode t) ; turn it on for all modes by default
+;; don't commit trailing whitespace
+(setq-default show-trailing-whitespace t)
+(setq-default default-indicate-empty-lines t)
+;; (setq-default indent-tabs-mode nil)
+;; (set-variable default-indicate-empty-lines t)
 
 ;; pretty cool; with this we can shift to different 'windows'
 ;;  use M-<arrow keys>
-;; note: a 'window' is emacs-lingo for a partition of what is called
-;; a window normally -- C-x 2 will split your 'window' into two 'windows'
 (when (require-soft 'windmove)
   (windmove-default-keybindings 'meta))
 
@@ -180,10 +174,21 @@
 ;; window-system (i.e. _not_ console) specific settings
 ;;
 (when (not console-p)
+
+  ;; highlight the current line; set a custom face, so we can
+  ;; recognize it from the normal marking (selection)
+  ;; don't turn it on globally, only in specific modes (see my-c-mode-hook)
+;;   (when-available 'global-hl-line-mode
+;; 		  (progn
+;; 		    (defface hl-line '((t (:background "Gray")))
+;; 		      "Face to use for 'hl-line-face'." :group 'hl-line)
+;; 		    (setq hl-line-face 'hl-line)
+;; 		    (global-hl-line-mode t))) ; turn it on for all modes by default
   (when-available 'scroll-bar-mode
 		  (progn
 		    (scroll-bar-mode t)              ; show the scroll bar...
-		    (set-scroll-bar-mode 'right))))  ; ...on the right side
+		    (set-scroll-bar-mode 'right)))   ; ...on the right side
+)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
