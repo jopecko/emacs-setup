@@ -8,9 +8,9 @@
 
 (setq html-helper-do-write-file-hooks t) ; modify date on write
 (setq html-helper-build-new-buffer t)	; initialize new buffer
-(setq html-helper-address-string	; not really used in this setup
-      (concat "<a href=\"http://onestepback.org\">Jim Weirich</a> / \n"
-	      "<a href=\"mailto:jim@weirichhouse.org\">jim@weirichhouse.org</a>\n"))
+;; (setq html-helper-address-string	; not really used in this setup
+;;       (concat "<a href=\"http://onestepback.org\">Jim Weirich</a> / \n"
+;; 	      "<a href=\"mailto:jim@weirichhouse.org\">jim@weirichhouse.org</a>\n"))
 
 
 ;;; Fix the binding of "\C-c " in html mode --------------------------
