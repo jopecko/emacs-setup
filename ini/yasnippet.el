@@ -14,8 +14,10 @@
        (yas/initialize)
        (yas/load-directory (concat yas-dir "/snippets"))
 
-       (setq yas/root-directory (expand-file-name (concat elisp-directory "/snippets/")))
-       (yas/load-directory yas/root-directory)
+;;       (setq yas/root-directory "/home/opeckojo/.elisp/snippets/")
+;;        (setq yas/root-directory (expand-file-name (concat elisp-directory "/snippets")))
+;;       (yas/load-directory yas/root-directory)
+        (yas/load-directory (expand-file-name (concat elisp-directory "/snippets"))) ;having trouble with the above right now; FIXME
        ))
 
 (setq yas/text-popup-function          #'yas/dropdown-list-popup-for-template)
