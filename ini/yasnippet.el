@@ -4,7 +4,7 @@
 ;;; Purpose: Setup yasnippet
 ;;; ==================================================================
 
-(setq yas-dir (expand-file-name (concat elisp-directory "/pkgs/yasnippet-0.5.4")))
+(setq yas-dir (expand-file-name (concat elisp-directory "/pkgs/yasnippet")))
 
 (cond ((file-exists-p yas-dir)
        (add-to-load-path yas-dir)
@@ -13,7 +13,7 @@
 ;;       (require 'dropdown-list)
        (yas/initialize)
        (yas/load-directory (concat yas-dir "/snippets"))
-       
+
        (setq yas/root-directory (expand-file-name (concat elisp-directory "/snippets/")))
        (yas/load-directory yas/root-directory)
        ))
