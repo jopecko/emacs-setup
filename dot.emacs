@@ -6,8 +6,16 @@
 (setq home-dir (concat (expand-file-name "~") "/"))
 (defvar bin-dir (concat home-dir "bin/"))
 
-(setq elisp-directory (concat home-dir ".elisp"))
-(load (concat elisp-directory "/load-ini.el"))
+(setq elisp-directory (concat home-dir ".elisp/"))
+(load (concat elisp-directory "load-ini.el"))
+
+;; load any customizations for the current machine
+(setq dot-emacs-dot-d (concat home-dir ".emacs.d/"))
+(when (file-exists-p dot-emacs-dot-d)
+       (add-to-load-path dot-emacs-dot-d)
+       (let ((local-el (concat dot-emacs-dot-d "local.el")))
+         (when (file-readable-p local-el)
+           (load local-el))))
 
 ;; Keep custom variables, (M-x customize*), in their own file
 ;; http://www.gnu.org/software/emacs/manual/html_node/emacs/Saving-Customizations.html
