@@ -1,8 +1,8 @@
 ;;; -*-Emacs-Lisp-*-
 ;;;
-;;;  $Id: inf-ruby.el,v 1.1 2000/08/18 11:01:11 jim Exp $
-;;;  $Author: jim $
-;;;  $Date: 2000/08/18 11:01:11 $
+;;;  $Id: inf-ruby.el,v 1.6.2.1 2004/07/27 07:51:28 matz Exp $
+;;;  $Author: matz $
+;;;  $Date: 2004/07/27 07:51:28 $
 ;;;
 ;;; Inferior Ruby Mode - ruby process in a buffer.
 ;;;                      adapted from cmuscheme.el
@@ -15,13 +15,13 @@
 ;;;     for example :
 ;;;
 ;;;    (autoload 'ruby-mode "ruby-mode"
-;;;      "Mode for editing ruby source files")
+;;;      "Mode for editing ruby source files" t)
 ;;;    (setq auto-mode-alist
 ;;;          (append '(("\\.rb$" . ruby-mode)) auto-mode-alist))
 ;;;    (setq interpreter-mode-alist (append '(("ruby" . ruby-mode))
 ;;;    				     interpreter-mode-alist))
 ;;;    
-;;; (2) set to road inf-ruby and set inf-ruby key definition in ruby-mode.
+;;; (2) set to load inf-ruby and set inf-ruby key definition in ruby-mode.
 ;;;
 ;;;    (autoload 'run-ruby "inf-ruby"
 ;;;      "Run an inferior Ruby process")
@@ -35,10 +35,48 @@
 ;;; HISTORY
 ;;; senda -  8 Apr 1998: Created.
 ;;;	 $Log: inf-ruby.el,v $
-;;;	 Revision 1.1  2000/08/18 11:01:11  jim
-;;;	 Initial checking for non-ini elisp files.
+;;;	 Revision 1.7  2004/07/27 08:11:36  matz
+;;;	 * eval.c (rb_eval): copy on write for argument local variable
+;;;	   assignment.
+;;;
+;;;	 * eval.c (assign): ditto.
+;;;
+;;;	 * eval.c (rb_call0): update ruby_frame->argv with the default
+;;;	   value used for the optional arguments.
+;;;
+;;;	 * object.c (Init_Object): "===" calls rb_obj_equal() directly.
+;;;	   [ruby-list:39937]
 ;;;	
-;;;	 Revision 1.2.2.1  1999/12/01 09:24:48  matz
+;;;	 Revision 1.6  2002/09/07 14:35:46  nobu
+;;;	 * misc/inf-ruby.el (inferior-ruby-error-regexp-alist): regexp
+;;;	   alist for error message from ruby.
+;;;	
+;;;	 * misc/inf-ruby.el (inferior-ruby-mode): fixed for Emacs.
+;;;	
+;;;	 * misc/inf-ruby.el (ruby-send-region): compilation-parse-errors
+;;;	   doesn't parse first line, so insert separators before each
+;;;	   evaluations.
+;;;	
+;;;	 Revision 1.5  2002/08/19 10:05:47  nobu
+;;;	 * misc/inf-ruby.el (inf-ruby-keys): ruby-send-definition
+;;;	   conflicted with ruby-insert-end.
+;;;	
+;;;	 * misc/inf-ruby.el (inferior-ruby-mode): compilation-minor-mode.
+;;;	
+;;;	 * misc/inf-ruby.el (ruby-send-region): send as here document to
+;;;	   adjust source file/line.  [ruby-talk:47113], [ruby-dev:17965]
+;;;	
+;;;	 * misc/inf-ruby.el (ruby-send-terminator): added to make unique
+;;;	   terminator.
+;;;	
+;;;	 Revision 1.4  2002/01/29 07:16:09  matz
+;;;	 * file.c (rb_stat_rdev_major): added. [new]
+;;;	
+;;;	 * file.c (rb_stat_rdev_minor): added. [new]
+;;;	
+;;;	 * file.c (rb_stat_inspect): print mode in octal.
+;;;	
+;;;	 Revision 1.3  1999/12/01 09:24:18  matz
 ;;;	 19991201
 ;;;	
 ;;;	 Revision 1.2  1999/08/13 05:45:18  matz
@@ -73,6 +111,7 @@
 ;;;
 
 (require 'comint)
+(require 'compile)
 (require 'ruby-mode)
 
 ;;
@@ -105,6 +144,10 @@
 (defvar inferior-ruby-mode-map nil
   "*Mode map for inferior-ruby-mode")
 
+(defconst inferior-ruby-error-regexp-alist
+       '(("SyntaxError: compile error\n^\\([^\(].*\\):\\([1-9][0-9]*\\):" 1 2)
+	 ("^\tfrom \\([^\(].*\\):\\([1-9][0-9]*\\)\\(:in `.*'\\)?$" 1 2)))
+
 (cond ((not inferior-ruby-mode-map)
        (setq inferior-ruby-mode-map
 	     (copy-keymap comint-mode-map))
@@ -118,8 +161,10 @@
   "Set local key defs for inf-ruby in ruby-mode"
   (define-key ruby-mode-map "\M-\C-x" 'ruby-send-definition)
 ;  (define-key ruby-mode-map "\C-x\C-e" 'ruby-send-last-sexp)
-  (define-key ruby-mode-map "\C-c\C-e" 'ruby-send-definition)
-  (define-key ruby-mode-map "\C-c\M-e" 'ruby-send-definition-and-go)
+  (define-key ruby-mode-map "\C-c\C-b" 'ruby-send-block)
+  (define-key ruby-mode-map "\C-c\M-b" 'ruby-send-block-and-go)
+  (define-key ruby-mode-map "\C-c\C-x" 'ruby-send-definition)
+  (define-key ruby-mode-map "\C-c\M-x" 'ruby-send-definition-and-go)
   (define-key ruby-mode-map "\C-c\C-r" 'ruby-send-region)
   (define-key ruby-mode-map "\C-c\M-r" 'ruby-send-region-and-go)
   (define-key ruby-mode-map "\C-c\C-z" 'switch-to-ruby)
@@ -176,6 +221,9 @@ to continue it."
   (use-local-map inferior-ruby-mode-map)
   (setq comint-input-filter (function ruby-input-filter))
   (setq comint-get-old-input (function ruby-get-old-input))
+  (compilation-shell-minor-mode t)
+  (make-local-variable 'compilation-error-regexp-alist)
+  (setq compilation-error-regexp-alist inferior-ruby-error-regexp-alist)
   (run-hooks 'inferior-ruby-mode-hook))
 
 (defvar inferior-ruby-filter-regexp "\\`\\s *\\S ?\\S ?\\s *\\'"
@@ -238,11 +286,35 @@ of `ruby-program-name').  Runs the hooks `inferior-ruby-mode-hook'
   (setq ruby-buffer "*ruby*")
   (pop-to-buffer "*ruby*"))
 
+(defconst ruby-send-terminator "--inf-ruby-%x-%d-%d-%d--"
+  "Template for irb here document terminator.
+Must not contain ruby meta characters.")
+
+(defconst ruby-eval-separator "")
+
 (defun ruby-send-region (start end)
   "Send the current region to the inferior Ruby process."
   (interactive "r")
-  (comint-send-region (ruby-proc) start end)
-  (comint-send-string (ruby-proc) "\n"))
+  (let (term (file (buffer-file-name)) line)
+    (save-excursion
+      (save-restriction
+	(widen)
+	(goto-char start)
+	(setq line (+ start (forward-line (- start)) 1))
+	(goto-char start)
+	(while (progn
+		 (setq term (apply 'format ruby-send-terminator (random) (current-time)))
+		 (re-search-forward (concat "^" (regexp-quote term) "$") end t)))))
+    ;; compilation-parse-errors parses from second line.
+    (save-excursion
+      (let ((m (process-mark (ruby-proc))))
+	(set-buffer (marker-buffer m))
+	(goto-char m)
+	(insert ruby-eval-separator "\n")
+	(set-marker m (point))))
+    (comint-send-string (ruby-proc) (format "eval <<'%s', nil, %S, %d\n" term file line))
+    (comint-send-region (ruby-proc) start end)
+    (comint-send-string (ruby-proc) (concat "\n" term "\n"))))
 
 (defun ruby-send-definition ()
   "Send the current definition to the inferior Ruby process."
@@ -257,6 +329,16 @@ of `ruby-program-name').  Runs the hooks `inferior-ruby-mode-hook'
 ;  "Send the previous sexp to the inferior Ruby process."
 ;  (interactive)
 ;  (ruby-send-region (save-excursion (backward-sexp) (point)) (point)))
+
+(defun ruby-send-block ()
+  "Send the current block to the inferior Ruby process."
+  (interactive)
+  (save-excursion
+    (ruby-end-of-block)
+    (end-of-line)
+    (let ((end (point)))
+      (ruby-beginning-of-block)
+      (ruby-send-region (point) end))))
 
 (defun switch-to-ruby (eob-p)
   "Switch to the ruby process buffer.
@@ -281,6 +363,13 @@ Then switch to the process buffer."
 Then switch to the process buffer."
   (interactive)
   (ruby-send-definition)
+  (switch-to-ruby t))
+
+(defun ruby-send-block-and-go ()
+  "Send the current block to the inferior Ruby. 
+Then switch to the process buffer."
+  (interactive)
+  (ruby-send-block)
   (switch-to-ruby t))
 
 (defvar ruby-source-modes '(ruby-mode)
