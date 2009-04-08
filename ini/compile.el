@@ -28,5 +28,16 @@
 (add-to-list 'compilation-error-regexp-alist
              '("Line \\([0-9]+\\) column [0-9]+ in [A-Za-z0-9_]+ (\\(.*\\)) +:" 2 1) )
 
+;; Highlight any line numbers in the compilation error
+;; http://lifegoo.pluskid.org/?p=245
+(add-to-list 'compilation-mode-font-lock-keywords
+	     '("^\\([[:digit:]]+\\) examples?, \\([[:digit:]]+\\) failures?\\(?:, \\([[:digit:]]+\\) pendings?\\)?$"
+	       (0 '(face nil message nil help-echo nil mouse-face nil) t)
+	       (1 compilation-info-face)
+	       (2 (if (string= "0" (match-string 2))
+		      compilation-info-face
+		    compilation-error-face))
+	       (3 compilation-info-face t t)))
 
-
+;; scroll the compilation buffer result
+(setq compilation-scroll-output t)
