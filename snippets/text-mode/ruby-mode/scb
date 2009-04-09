@@ -1,4 +1,4 @@
 # -*- mode: ruby; require-final-newline: nil; backup-inhibited: t -*-
-#name : Arbitrarary String
+#name: should_change by
 # --
-`"arbitrary string"`
+should_change "${1:expression}", :by => ${2:amount}
