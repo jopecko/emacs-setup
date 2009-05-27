@@ -7,22 +7,22 @@
 ;;____________________________________________________________________
 ;;;;    Programming - Clojure
 
-(add-to-list 'load-path (concat home-dir "lisp/clj/clojure-mode"))
-(autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
-(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
-;;(require 'clojure-auto)
+(setq clj-dir (concat home-dir "lisp/clj"))
 
-;; Slime
-(add-to-list 'load-path (concat home-dir "lisp/clj/slime/"))
-(require 'slime)
-(slime-setup)
+(setq clojure-mode-dir (concat clj-dir "clojure-mode"))
+(when (file-directory-p clojure-mode-dir)
+  (add-to-list 'load-path clojure-mode-dir)
+  (autoload 'clojure-mode "clojure-mode" "A major mode for Clojure" t)
+  (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
+  ;;(require 'clojure-auto)
+)
 
 ;; swank-clojure
-(add-to-list 'load-path (concat home-dir "lisp/clj/swank-clojure"))
-;(setq swank-clojure-jar-path "~/lisp/clj/clojure/clojure.jar")
-(setq swank-clojure-binary (concat home-dir "bin/clj"))
-;;x(setq swank-clojure-extra-classpaths (list "/class/path/1" "/class/path/2" "/class/path/3" "etc"))
-(require 'swank-clojure-autoload)
+(setq swank-clojure-dir (concat clj-dir "swank-clojure"))
+(when (file-directory-p swank-clojure-dir)
+  (add-to-list 'load-path swank-clojure-dir)
+  (setq swank-clojure-binary (concat home-dir "bin/clj"))
+  (require 'swank-clojure-autoload))
 
 ;(defvar clj-root (concat home-dir "lisp/clj"))
 ;(setq load-path (append (list (concat clj-root "slime")

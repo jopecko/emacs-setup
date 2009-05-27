@@ -6,14 +6,30 @@
 
 ;;; Erlang Mode Setups ===============================================
 
+(cond ((file-directory-p "/usr/lib64/erlang")
+         ;; 64-bit Fedora Linux
+         (setq erlang-root-dir "/usr/lib64/erlang")
+         (setq erlang-tools-ver "2.6.2"))
+      ((file-directory-p "/usr/local/lib/erlang")
+         ;; OS X
+         (setq erlang-root-dir "/usr/local/lib/erlang")
+         (setq erlang-tools-ver "2.6.4")))
 
-(setq erlang-root-dir "/usr/lib64/erlang")
 (setq erlang-man-root-dir (concat erlang-root-dir "/man"))
+
+;; we need to concat erlang-root-dir + "/lib/tools-" + erlang-tools-ver + "/emacs"
 
 (if (file-directory-p erlang-root-dir)
     (progn
-      (setq load-path (cons (concat erlang-root-dir "/lib/tools-2.6.2/emacs")
-                             load-path))
+      ;; there must be an easier way!
+      (setq load-path (cons
+                       (concat
+                        (concat
+                         (concat erlang-root-dir "/lib/tools-")
+                         erlang-tools-ver)
+                        "/emacs")
+                       ;;(concat erlang-root-dir "/lib/tools-2.6.2/emacs")
+                       load-path))
       (setq exec-path (cons (concat erlang-root-dir "/bin") exec-path))
       (require 'erlang-start)))
 
@@ -49,26 +65,28 @@
 
 
 ;; This is needed for Distel setup
-(let ((distel-dir (concat home-dir"repos/svn-repos/distel/elisp")))
+(let ((distel-dir (concat home-dir "repos/svn-repos/distel/elisp")))
   (unless (member distel-dir load-path)
     ;; Add distel-dir to the end of load-path
-    (setq load-path (append load-path (list distel-dir)))))
+    (setq load-path (append load-path (list distel-dir))))
 
-(require 'distel)
-(distel-setup)
+  (when (file-directory-p distel-dir)
+    (require 'distel)
+    (distel-setup)
 
-;; A number of the erlang-extended-mode key bindings are useful in the shell too
-(defconst distel-shell-keys
-  '(("\C-\M-i"   erl-complete)
-    ("\M-?"      erl-complete)	
-    ("\M-."      erl-find-source-under-point)
-    ("\M-,"      erl-find-source-unwind) 
-    ("\M-*"      erl-find-source-unwind) 
-    )
-  "Additional keys to bind when in Erlang shell.")
+    ;; A number of the erlang-extended-mode key bindings are useful
+    ;; in the shell too
+    (defconst distel-shell-keys
+      '(("\C-\M-i"   erl-complete)
+        ("\M-?"      erl-complete)
+        ("\M-."      erl-find-source-under-point)
+        ("\M-,"      erl-find-source-unwind)
+        ("\M-*"      erl-find-source-unwind)
+        )
+      "Additional keys to bind when in Erlang shell.")
 
-(add-hook 'erlang-shell-mode-hook
-	  (lambda ()
-	    ;; add some Distel bindings to the Erlang shell
-	    (dolist (spec distel-shell-keys)
-	      (define-key erlang-shell-mode-map (car spec) (cadr spec)))))
+    (add-hook 'erlang-shell-mode-hook
+              (lambda ()
+                ;; add some Distel bindings to the Erlang shell
+                (dolist (spec distel-shell-keys)
+                  (define-key erlang-shell-mode-map (car spec) (cadr spec)))))))

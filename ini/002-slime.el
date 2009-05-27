@@ -7,10 +7,11 @@
 ;;____________________________________________________________________
 ;;;;    Programming - Slime
 
-(add-to-list 'load-path (concat home-dir "lisp/slime/"))
-(require 'slime)
-
-(slime-setup)
+(setq slime-dir (concat home-dir "lisp/slime"))
+(when (file-directory-p slime-dir)
+  (add-to-list 'load-path slime-dir)
+  (require 'slime)
+  (slime-setup))
 
 ;; jump to slime when a lisp file is opened
 ;(add-hook 'lisp-mode-hook (lambda () (slime-mode t)))
