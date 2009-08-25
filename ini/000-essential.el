@@ -287,3 +287,10 @@
 ;; (setq bad-re "\\([^ :]+\\):\\([0-9]+\\):in")
 
 (require 'flymake)
+
+;
+; bind F5 to refresh file
+(defun refresh-file()
+  (interactive)
+  (revert-buffer t t t))
+(global-set-key [f5] 'refresh-file)

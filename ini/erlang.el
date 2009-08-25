@@ -62,15 +62,13 @@
           ;; enable flymake mode for Erlang
           (flymake-mode t)))
 
-
-
 ;; This is needed for Distel setup
 (let ((distel-dir (concat home-dir "repos/svn-repos/distel/elisp")))
-  (unless (member distel-dir load-path)
-    ;; Add distel-dir to the end of load-path
-    (setq load-path (append load-path (list distel-dir))))
 
   (when (file-directory-p distel-dir)
+    (unless (member distel-dir load-path)
+      ;; Add distel-dir to the end of load-path
+      (setq load-path (append load-path (list distel-dir))))
     (require 'distel)
     (distel-setup)
 
