@@ -29,7 +29,7 @@
 (defun jw-gnus-hooker ()
   (cond ((boundp 'message-mode-map)  (jw-define-gnus-keys message-mode-map))
 	((boundp 'news-reply-mode-map)  (jw-define-gnus-keys news-reply-mode-map)) ))
-	
+
 (add-hook 'message-mode-hook 'jw-gnus-hooker)
 
 ;;; In case the hook must be run manually ...
@@ -44,7 +44,7 @@
       (gnus-summary-reply n)
     (gnus-summary-followup n)))
 
-(defun jnw-fixup-gnus () 
+(defun jnw-fixup-gnus ()
   (define-key gnus-summary-mode-map "r" 'jnw-summary-reply))
 
 (add-hook 'gnus-summary-mode-hook 'jnw-fixup-gnus)

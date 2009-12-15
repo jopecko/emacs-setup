@@ -14,6 +14,16 @@
          (when (file-readable-p local-el)
            (load local-el))))
 
+;; (defvar elisp-root (concat
+;;                     (file-name-directory
+;;                      (or (buffer-file-name) load-file-name))
+;;                     "../")
+;;   "Directory containing the Emacs initialization.")
+(defvar elisp-root
+  (file-name-directory
+   (or (buffer-file-name) load-file-name))
+  "Directory containing the Emacs initialization.")
+
 (setq elisp-directory (concat home-dir ".elisp/"))
 (load (concat elisp-directory "load-ini.el"))
 

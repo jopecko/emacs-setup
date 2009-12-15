@@ -13,15 +13,17 @@
       ((file-directory-p "/usr/local/lib/erlang")
          ;; OS X
          (setq erlang-root-dir "/usr/local/lib/erlang")
-         (setq erlang-tools-ver "2.6.4")))
-
-(setq erlang-man-root-dir (concat erlang-root-dir "/man"))
+         (setq erlang-tools-ver "2.6.4"))
+      (t
+       (setq erlang-root-dir "/some/broken/path")
+       (setq erlang-tools-ver "0.0.0")))
 
 ;; we need to concat erlang-root-dir + "/lib/tools-" + erlang-tools-ver + "/emacs"
 
 (if (file-directory-p erlang-root-dir)
     (progn
       ;; there must be an easier way!
+      (setq erlang-man-root-dir (concat erlang-root-dir "/man"))
       (setq load-path (cons
                        (concat
                         (concat

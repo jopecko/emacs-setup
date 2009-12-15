@@ -9,10 +9,10 @@
 
 (when (file-directory-p slime-dir)
   (add-to-list 'load-path slime-dir)
-  (add-to-list 'load-path (concat slime-dir "/contrib"))
+  ;; (add-to-list 'load-path (concat slime-dir "/contrib"))
 
-  (require 'slime)
-  (slime-setup '(slime-fancy))
+  (require 'slime-autoloads)
+  ;; (slime-setup '(slime-fancy))
 
   (defun slime-smart-quit ()
     (interactive)
@@ -24,10 +24,15 @@
 
   ;(define-key slime-repl-mode-map [(hyper q)] 'slime-smart-quit)
 
-  (add-hook 'kill-emacs-hook 'slime-smart-quit))
+  ;; contrib functionality is loaded after SLIME has been loaded
+  ;; http://bc.tech.coop/blog/070927.html
+  (eval-after-load "slime"
+    '(progn
+       (add-to-list 'load-path (concat slime-dir "contrib"))
+       ;; (slime-setup '(slime-fancy slime-asdf slime-banner))
+       (slime-setup '(slime-fancy slime-banner))
+       (setq slime-complete-symbol*-fancy t)
+       (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)))
 
-;; need to find a home for this
-(require 'paredit)
-(defun lisp-enable-paredit-hook () (paredit-mode 1))
-;; enable paredit in slime repl
-(add-hook 'slime-repl-mode-hook (lambda () (paredit-mode +1)))
+  ;; (add-hook 'kill-emacs-hook 'slime-smart-quit)
+)

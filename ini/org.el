@@ -14,6 +14,14 @@
 
 (setq org-log-done t)
 
+;; orgstruct++-mode is enabled in Gnus message buffers to aid in creating
+;; structured email messages.
+;; (setq message-mode-hook
+;;       (quote (orgstruct++-mode
+;;               (lambda nil (setq fill-column 72) (flyspell-mode 1))
+;;               turn-on-auto-fill
+;;               bbdb-define-all-aliases)))
+
 ;; Make TAB the yas trigger key in the org-mode-hook and turn on flyspell mode
 (add-hook 'org-mode-hook
           (lambda ()
@@ -31,9 +39,9 @@
 ;;          (sequence "WAITING(w@/!)" "SOMEDAY(S!)" "OPEN(O@)" "|" "CANCELLED(c@/!)")
 ;;          (sequence "QUOTE(q!)" "QUOTED(Q!)" "|" "APPROVED(A@)" "EXPIRED(E@)" "REJECTED(R@)")))
 (setq org-todo-keywords
-           '((sequence "TODO" "|" "DONE")
-             (sequence "REPORT" "BUG" "KNOWNCAUSE" "|" "FIXED")
-             (sequence "|" "CANCELED")))
+      (quote ((sequence "TODO(t)" "STARTED(s!)" "|" "DONE(d!/!)")
+              (sequence "WAITING(w@/!)" "SOMEDAY(S!)" "OPEN(O@)" "|" "CANCELLED(c@/!)")
+              (sequence "QUOTE(q!)" "QUOTED(Q!)" "|" "APPROVED(A@)" "EXPIRED(E@)" "REJECTED(R@)"))))
 
 (setq org-todo-keyword-faces
       '(("TODO" :foreground "red" :weight bold)
@@ -94,4 +102,4 @@
     ad-do-it))
 
 ;; include all org files from a directory into the agenda
-(setq org-agenda-files (file-expand-wildcards "~/org/*.org"))
+(setq org-agenda-files (file-expand-wildcards "~/.gtd/*.org"))
